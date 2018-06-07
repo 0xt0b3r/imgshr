@@ -1,12 +1,14 @@
 - if picture.plain?
   = image_tag '',
-    data: { src: picture.image.url(:medium) },
+    data: { src: url_for(picture.image.variant(resize: 'x200')) },
     title: picture,
     alt: picture
 - else
   = react_component 'crypto/LazyEncryptedImage',
-    { src: picture.image.url,
+    { src: url_for(picture.image),
       title: picture.to_s }
 
 %noscript
-  = image_tag picture.image.url(:medium), title: picture, alt: picture
+  = image_tag picture.image.variant(resize: 'x200'),
+    title: picture,
+    alt: picture

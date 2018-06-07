@@ -6,44 +6,46 @@ class Picture < ApplicationRecord
 
   serialize :dimensions
 
-  has_attached_file :image,
-    styles: {medium: '850x850>', thumb: '200x200>'},
-    url: '/system/:hash.:extension',
-    hash_secret: Rails.application.secrets[:secret_key_base],
-    processors: [:thumbnail, :paperclip_optimizer]
+  # has_attached_file :image,
+  #   styles: {medium: '850x850>', thumb: '200x200>'},
+  #   url: '/system/:hash.:extension',
+  #   hash_secret: Rails.application.secrets[:secret_key_base],
+  #   processors: [:thumbnail, :paperclip_optimizer]
 
-  if !::Settings.foreground_processing
-    process_in_background :image, processing_image_url: '/images/missing/:style.png'
-  end
+  has_one_attached :image
+
+  # if !::Settings.foreground_processing
+  #   process_in_background :image, processing_image_url: '/images/missing/:style.png'
+  # end
 
   acts_as_taggable_on :tags, :labels
 
-  validates_attachment_content_type :image,
-    content_type: /\Aimage\/.*\Z/,
-    if: :plain?
+  # validates_attachment_content_type :image,
+  #   content_type: /\Aimage\/.*\Z/,
+  #   if: :plain?
+  #
+  # validates_attachment_content_type :image,
+  #   content_type: /\Aapplication\/octet-stream\Z/,
+  #   unless: :plain?
 
-  validates_attachment_content_type :image,
-    content_type: /\Aapplication\/octet-stream\Z/,
-    unless: :plain?
-
-  validates :image_fingerprint,
-    uniqueness: {
-      scope: :gallery_id,
-      message: 'Picture already exists in gallery!'
-    }
+  # validates :image_fingerprint,
+  #   uniqueness: {
+  #     scope: :gallery_id,
+  #     message: 'Picture already exists in gallery!'
+  #   }
 
   before_create :set_order_date!
 
-  after_image_post_process :set_height_and_width!, if: :plain?
-  after_image_post_process -> do
-    set_exif_attributes
-    set_order_date!
-  end
+  # after_image_post_process :set_height_and_width!, if: :plain?
+  # after_image_post_process -> do
+  #   set_exif_attributes
+  #   set_order_date!
+  # end
 
-  if !::Settings.foreground_processing && LabelImage.is_enabled?
-    # TODO after_image_post_process without delay
-    after_create :enqueue_label_job
-  end
+  # if !::Settings.foreground_processing && LabelImage.is_enabled?
+  #   # TODO after_image_post_process without delay
+  #   after_create :enqueue_label_job
+  # end
 
   scope :by_order_date, -> { order('order_date desc') }
   scope :by_created_at, -> { order('created_at desc') }
@@ -64,9 +66,9 @@ class Picture < ApplicationRecord
     dimensions[size][:height] rescue nil
   end
 
-  def image_fingerprint_short
-    @image_fingerprint_short ||= image_fingerprint[0..7]
-  end
+  # def image_fingerprint_short
+  #   @image_fingerprint_short ||= image_fingerprint[0..7]
+  # end
 
   def photographed_or_created_at
     photographed_at || created_at
@@ -74,9 +76,9 @@ class Picture < ApplicationRecord
 
   # TODO Referal of pictures by fingerprint assumes they are unique. Actually,
   #      we also need a slug, here.
-  def to_param
-    image_fingerprint_short
-  end
+  # def to_param
+  #   image_fingerprint_short
+  # end
 
   def to_s
     title.blank? ? 'Untitled picture' : title
@@ -86,15 +88,15 @@ class Picture < ApplicationRecord
     dimensions[size][:width] rescue nil
   end
 
-  def label_image!
-    process = LabelImage::Process.new(self.image.path(:medium))
-    raw_label_list = process.run!
-
-    self.raw_label_list = raw_label_list.to_json
-    self.label_list = process.labels_above_threshold
-
-    save!
-  end
+  # def label_image!
+  #   process = LabelImage::Process.new(self.image.path(:medium))
+  #   raw_label_list = process.run!
+  #
+  #   self.raw_label_list = raw_label_list.to_json
+  #   self.label_list = process.labels_above_threshold
+  #
+  #   save!
+  # end
 
   def raw_label_list_hash
     JSON.parse(raw_label_list)
@@ -128,35 +130,35 @@ class Picture < ApplicationRecord
     pictures
   end
 
-  def self.first_by_fingerprint!(fp)
-    if fp.size == 8
-      where('image_fingerprint like ?', "#{fp}%").first!
-    else
-      find_by_image_fingerprint!(fp)
-    end
-  end
+  # def self.first_by_fingerprint!(fp)
+  #   if fp.size == 8
+  #     where('image_fingerprint like ?', "#{fp}%").first!
+  #   else
+  #     find_by_image_fingerprint!(fp)
+  #   end
+  # end
 
-  def self.neighbor_id(picture, d)
-    ids = pluck(:id)
+  # def self.neighbor_id(picture, d)
+  #   ids = pluck(:id)
+  #
+  #   begin
+  #     i = ids.index(picture.id) + d
+  #   rescue NoMethodError
+  #     return nil
+  #   end
+  #
+  #   return nil if i < 0 || i > ids.size
+  #
+  #   ids[i]
+  # end
 
-    begin
-      i = ids.index(picture.id) + d
-    rescue NoMethodError
-      return nil
-    end
+  # def self.next_id(picture)
+  #   self.neighbor_id(picture, 1)
+  # end
 
-    return nil if i < 0 || i > ids.size
-
-    ids[i]
-  end
-
-  def self.next_id(picture)
-    self.neighbor_id(picture, 1)
-  end
-
-  def self.previous_id(picture)
-    self.neighbor_id(picture, -1)
-  end
+  # def self.previous_id(picture)
+  #   self.neighbor_id(picture, -1)
+  # end
 
   private
 
