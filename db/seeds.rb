@@ -8,8 +8,9 @@ picture.save!
 
 # FileRelease
 fr = FileRelease.new
-fr.file = File.open(Rails.root.join('README.md'))
+fr.file.attach(io: File.open(Rails.root.join('README.md')), filename: 'README.md')
 fr.version = 1
+fr.branch = 'master'
 fr.save!
 
 # Print Gallery URL
