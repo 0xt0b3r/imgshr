@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_06_03_110200) do
+ActiveRecord::Schema.define(version: 2018_06_08_160058) do
 
   create_table "active_storage_attachments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "name", null: false
@@ -93,7 +93,7 @@ ActiveRecord::Schema.define(version: 2018_06_03_110200) do
     t.string "image_content_type"
     t.integer "image_file_size"
     t.datetime "image_updated_at"
-    t.string "image_fingerprint", null: false
+    t.string "image_fingerprint"
     t.string "title"
     t.datetime "photographed_at"
     t.datetime "created_at"

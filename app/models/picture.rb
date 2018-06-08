@@ -20,21 +20,38 @@ class Picture < ApplicationRecord
 
   acts_as_taggable_on :tags, :labels
 
-  # validates_attachment_content_type :image,
-  #   content_type: /\Aimage\/.*\Z/,
-  #   if: :plain?
-  #
-  # validates_attachment_content_type :image,
-  #   content_type: /\Aapplication\/octet-stream\Z/,
-  #   unless: :plain?
+  class ImageValidator < ActiveModel::Validator
+    def validate(record)
+      unless record.image.attached?
+        record.errors[:base] << 'Image missing'
+        return
+      end
 
-  # validates :image_fingerprint,
-  #   uniqueness: {
-  #     scope: :gallery_id,
-  #     message: 'Picture already exists in gallery!'
-  #   }
+      if record.plain?
+        if !record.image.blob.content_type.starts_with?('image/')
+          record.image.purge
+          errors[:base] << 'Wrong image format'
+        end
+      else
+        if record.image.blob.content_type != 'application/octet-stream'
+          record.image.purge
+          errors[:base] << 'Wrong image format'
+        end
+      end
+    end
+  end
+
+  include ActiveModel::Validations
+  validates_with ImageValidator
+
+  validates :image_fingerprint,
+    uniqueness: {
+      scope: :gallery_id,
+      message: 'Picture already exists in gallery!'
+    }
 
   before_create :set_order_date!
+  after_create :set_image_fingerprint!
 
   # after_image_post_process :set_height_and_width!, if: :plain?
   # after_image_post_process -> do
@@ -42,10 +59,10 @@ class Picture < ApplicationRecord
   #   set_order_date!
   # end
 
-  # if !::Settings.foreground_processing && LabelImage.is_enabled?
-  #   # TODO after_image_post_process without delay
-  #   after_create :enqueue_label_job
-  # end
+  if !::Settings.foreground_processing && LabelImage.is_enabled?
+    # TODO after_image_post_process without delay
+    after_create :enqueue_label_job
+  end
 
   scope :by_order_date, -> { order('order_date desc') }
   scope :by_created_at, -> { order('created_at desc') }
@@ -66,9 +83,9 @@ class Picture < ApplicationRecord
     dimensions[size][:height] rescue nil
   end
 
-  # def image_fingerprint_short
-  #   @image_fingerprint_short ||= image_fingerprint[0..7]
-  # end
+  def image_fingerprint_short
+    @image_fingerprint_short ||= image_fingerprint[0..7]
+  end
 
   def photographed_or_created_at
     photographed_at || created_at
@@ -76,9 +93,9 @@ class Picture < ApplicationRecord
 
   # TODO Referal of pictures by fingerprint assumes they are unique. Actually,
   #      we also need a slug, here.
-  # def to_param
-  #   image_fingerprint_short
-  # end
+  def to_param
+    image_fingerprint_short
+  end
 
   def to_s
     title.blank? ? 'Untitled picture' : title
@@ -88,15 +105,18 @@ class Picture < ApplicationRecord
     dimensions[size][:width] rescue nil
   end
 
-  # def label_image!
-  #   process = LabelImage::Process.new(self.image.path(:medium))
-  #   raw_label_list = process.run!
-  #
-  #   self.raw_label_list = raw_label_list.to_json
-  #   self.label_list = process.labels_above_threshold
-  #
-  #   save!
-  # end
+  def label_image!
+    ds = ActiveStorage::Service::DiskService.new(root: Rails.root.join('storage'))
+    path = ds.send(:path_for, self.image.blob.key)
+
+    process = LabelImage::Process.new(path)
+    raw_label_list = process.run!
+
+    self.raw_label_list = raw_label_list.to_json
+    self.label_list = process.labels_above_threshold
+
+    save!
+  end
 
   def raw_label_list_hash
     JSON.parse(raw_label_list)
@@ -130,13 +150,13 @@ class Picture < ApplicationRecord
     pictures
   end
 
-  # def self.first_by_fingerprint!(fp)
-  #   if fp.size == 8
-  #     where('image_fingerprint like ?', "#{fp}%").first!
-  #   else
-  #     find_by_image_fingerprint!(fp)
-  #   end
-  # end
+  def self.first_by_fingerprint!(fp)
+    if fp.size == 8
+      where('image_fingerprint like ?', "#{fp}%").first!
+    else
+      find_by_image_fingerprint!(fp)
+    end
+  end
 
   # def self.neighbor_id(picture, d)
   #   ids = pluck(:id)
@@ -240,6 +260,11 @@ class Picture < ApplicationRecord
     end
 
     true
+  end
+
+  def set_image_fingerprint!
+    update_attributes! \
+      image_fingerprint: Digest::MD5.hexdigest(self.image.download)
   end
 
   def enqueue_label_job
