@@ -30,6 +30,7 @@ class PicturesController < ApplicationController
 
       begin
         @picture.image.attach(image)
+        @picture.save!
       rescue ActiveRecord::RecordInvalid
         redirect_to gallery, flash: { error: @picture.errors.full_messages.join(', ') }
         return

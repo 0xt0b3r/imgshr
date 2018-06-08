@@ -12,11 +12,9 @@ gem 'bootsnap', require: false
 gem 'bootstrap-sass'
 gem 'coffee-rails'
 gem 'config'
-# gem 'delayed_paperclip'
 gem 'dotiw'
 gem 'exifr'
 gem 'hamlit'
-# gem 'image_optim_pack'
 gem 'image_processing', '~> 1.2'
 gem 'jbuilder'
 gem 'jquery-infinite-pages'
@@ -27,8 +25,6 @@ gem 'mail'
 gem 'mini_magick'
 gem 'mysql2', '~> 0.4.10'
 gem 'omniauth-github'
-# gem 'paperclip-optimizer'
-# gem 'paperclip'
 gem 'puma'
 gem 'rack-protection'
 gem 'react-rails'
@@ -52,6 +48,9 @@ group :development do
   gem 'spring-watcher-listen'
   gem 'spring'
   gem 'web-console'
+
+  # We have to keep it for old migrations
+  gem 'paperclip'
 end
 
 group :production do

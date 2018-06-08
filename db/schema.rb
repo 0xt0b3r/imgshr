@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_06_08_160058) do
+ActiveRecord::Schema.define(version: 2018_06_08_192218) do
 
   create_table "active_storage_attachments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "name", null: false
@@ -52,11 +52,6 @@ ActiveRecord::Schema.define(version: 2018_06_08_160058) do
   end
 
   create_table "file_releases", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.string "file_file_name"
-    t.string "file_content_type"
-    t.integer "file_file_size"
-    t.datetime "file_updated_at"
-    t.string "file_fingerprint", null: false
     t.string "version"
     t.datetime "created_at"
     t.datetime "updated_at"

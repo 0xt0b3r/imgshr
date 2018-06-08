@@ -2,7 +2,9 @@
 gallery = Gallery.create!
 
 file = File.open(Rails.root.join('public/images/emsi.png'))
-picture = gallery.pictures.create!(image: file)
+picture = gallery.pictures.build
+picture.image.attach(io: file, filename: 'emsi.png')
+picture.save!
 
 # FileRelease
 fr = FileRelease.new

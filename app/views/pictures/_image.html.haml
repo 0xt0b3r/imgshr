@@ -1,6 +1,10 @@
+-# This is currently also used on galleries#show
+-# TODO Decide on using special thumbnail format (e.g. x200)
+-# TODO Responsive Images (with lazy loading), remove jquery.unveil
+
 - if picture.plain?
   = image_tag '',
-    data: { src: url_for(picture.image.variant(resize: 'x200')) },
+    data: { src: url_for(picture.image.variant(resize: '850x')) },
     title: picture,
     alt: picture
 - else
@@ -9,6 +13,6 @@
       title: picture.to_s }
 
 %noscript
-  = image_tag picture.image.variant(resize: 'x200'),
+  = image_tag picture.image.variant(resize: '850x'),
     title: picture,
     alt: picture

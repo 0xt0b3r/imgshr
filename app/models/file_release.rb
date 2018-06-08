@@ -1,11 +1,7 @@
 class FileRelease < ApplicationRecord
-  has_attached_file :file,
-    url: '/system/:class/:id/:filename'
-
-  # validates_attachment_content_type :file, content_type: /\Aapplication\/java-archive/
-  do_not_validate_attachment_file_type :file
+  has_one_attached :file
 
   def to_s
-    file.original_filename
+    file.filename
   end
 end
