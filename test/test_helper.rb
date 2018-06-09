@@ -36,3 +36,9 @@ def emsi
   f.seek(0)
   f
 end
+
+def avenger
+  f = open(Rails.root.join('test', 'fixtures', 'avenger.jpg'))
+  f.seek(0)
+  f
+end
