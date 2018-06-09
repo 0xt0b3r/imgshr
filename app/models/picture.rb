@@ -4,6 +4,10 @@ class Picture < ApplicationRecord
   has_many :ratings, dependent: :destroy
   has_many :temp_links, dependent: :destroy
 
+  has_attached_file :paperclip_image,
+    url: '/system/:hash.:extension',
+    hash_secret: Rails.application.secrets[:secret_key_base]
+
   has_one_attached :image
 
   acts_as_taggable_on :tags, :labels
@@ -136,7 +140,7 @@ class Picture < ApplicationRecord
 
   def set_image_fingerprint!
     update_attributes! \
-      image_fingerprint: Digest::MD5.hexdigest(self.image.download)
+      image_fingerprint: Digest::SHA1.hexdigest(self.image.download)
   end
 
   def enqueue_label_job

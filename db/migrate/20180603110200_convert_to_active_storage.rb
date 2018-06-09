@@ -35,6 +35,9 @@ class ConvertToActiveStorage < ActiveRecord::Migration[5.2]
 
         model.find_each.each do |instance|
           attachments.each do |attachment|
+            p instance.send("#{attachment}").path
+            p instance.send("#{attachment}").hash_key if attachment == 'paperclip_image'
+
             active_storage_blob_statement.execute(
               key(instance, attachment),
               instance.send("#{attachment}_file_name"),
