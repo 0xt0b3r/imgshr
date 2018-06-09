@@ -78,6 +78,14 @@ class Picture < ApplicationRecord
     gallery && !gallery.client_encrypted
   end
 
+  def photographed_at
+    image.metadata[:photographed_at]
+  end
+
+  def photographed_at?
+    !!photographed_at
+  end
+
   def self.filtered(params)
     pictures = all
 

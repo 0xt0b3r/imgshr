@@ -21,7 +21,7 @@ class ImageExifAnalyzer < ActiveStorage::Analyzer::ImageAnalyzer
         h[:focal_length] = exif.focal_length.to_f.round(3)
       end
 
-      return h
+      h
     end
   rescue LoadError
     logger.info 'Skipping image analysis because the mini_magick gem is not installed'
