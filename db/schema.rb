@@ -84,10 +84,6 @@ ActiveRecord::Schema.define(version: 2018_06_08_192218) do
 
   create_table "pictures", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "gallery_id", null: false
-    t.string "image_file_name"
-    t.string "image_content_type"
-    t.integer "image_file_size"
-    t.datetime "image_updated_at"
     t.string "image_fingerprint"
     t.string "title"
     t.datetime "photographed_at"
