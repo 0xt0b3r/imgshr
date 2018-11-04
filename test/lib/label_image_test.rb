@@ -1,5 +1,3 @@
-require Rails.root.join('lib/label_image')
-
 class LabelImageTest < ActiveSupport::TestCase
   label_image_available = true
 
