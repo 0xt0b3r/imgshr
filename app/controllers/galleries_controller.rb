@@ -165,8 +165,8 @@ class GalleriesController < ApplicationController
       .filtered(params)
       .send(order)
       .page(params[:page])
-  rescue ArgumentError
-    raise ActiveRecord::RecordNotFound
+  # rescue ArgumentError
+  #   raise ActiveRecord::RecordNotFound
   end
 
   def split_rating_param

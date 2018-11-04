@@ -1,4 +1,4 @@
-require Rails.root.join('app/validators/picture_image_validator')
+require Rails.root.join('lib/active_storage/blob/analyzable')
 
 class Picture < ApplicationRecord
   include MetadataDelegator
@@ -26,9 +26,7 @@ class Picture < ApplicationRecord
       message: 'Picture already exists in gallery!'
     }
 
-  # before_create :set_order_date!
-  before_save :set_order_date!
-  after_touch :set_order_date!
+  before_create :set_order_date
   after_create :set_image_fingerprint!
 
   if !::Settings.foreground_processing && LabelImage.is_enabled?
@@ -49,6 +47,11 @@ class Picture < ApplicationRecord
 
   delegate_to_metadata :photographed_at, :camera, :focal_length, :aperture,
     :shutter_speed, :iso_speed, :flash, :height, :width
+
+  def after_analyze
+    self.send(:set_order_date!)
+    p :after_analyze, self
+  end
 
   def average_rating
     (ratings.sum(:score) / ratings.count.to_f).round(2)
@@ -128,6 +131,11 @@ class Picture < ApplicationRecord
   private
 
   def set_order_date!
+    self.send(:set_order_date)
+    self.save!
+  end
+
+  def set_order_date
     if self.photographed_at?
       self.order_date = self.photographed_at
     elsif self.created_at?
